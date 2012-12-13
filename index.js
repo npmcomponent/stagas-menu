@@ -154,10 +154,10 @@ Menu.prototype.add = function(text, fn){
     .click(function(e){
       e.preventDefault();
       e.stopPropagation();
-      self.hide();
       self.emit('select', slug);
       self.emit(slug);
       fn && fn();
+      self.hide();
     });
 
   this.items[slug] = el;
