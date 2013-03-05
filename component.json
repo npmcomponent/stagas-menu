@@ -8,7 +8,11 @@
   ],
   "dependencies": {
     "component/emitter": "*",
-    "component/jquery": "*"
+    "component/jquery": "*",
+    "pazguille/viewport": "*"
+  },
+  "development": {
+    "stagas/watch-js": "*"
   },
   "styles": [
     "menu.css"

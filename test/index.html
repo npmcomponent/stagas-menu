@@ -3,23 +3,54 @@
   <head>
     <title>Menu</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="stylesheet" href="../build/build.css" />
+    <style>
+
+    html {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    </style>
   </head>
   <body>
     <title>Menu</title>
+    <p>some<p>really<p>long<p>content
+    <p>some<p>really<p>long<p>content
+    <p>some<p>really<p>long<p>content
+    <p>some<p>really<p>long<p>content
+    <p>some<p>really<p>long<p>content
+    <p>some<p>really<p>long<p>content
+    <p>some<p>really<p>long<p>content
     <script src="../build/build.js"></script>
     <script>
+      require('stagas-watch-js');
       var menu = require('menu');
-  
+
       menu = menu();
-  
+
       menu
-      .add('add-item', 'Add <em>item</em>')
+      .add('add-item', 'Add <em>item</em>', function(){ menu.add('Item'); })
       .add('Edit item', function(){ console.log('edit'); })
       .add('Remove item', function(){ console.log('remove'); })
       .add('Remove "Add item"', function(){
         menu.remove('add-item');
         menu.remove('Remove "Add item"');
+      })
+      .add('Filter', function filterItem (){
+        menu.filter(function(item){
+          return item.slug.substr(0,1) !== 'r'
+        });
+        menu.change('Filter', 'Show all', function(){
+          menu.unhideAll();
+          menu.change('Show all', 'Filter', filterItem);
+        });
       });
 
       menu.on('select', function(item){
@@ -32,7 +63,7 @@
 
       oncontextmenu = function(e){
         e.preventDefault();
-        menu.moveTo(e.pageX, e.pageY);
+        menu.moveToCenter(e.pageX, e.pageY);
         menu.show();
       };
     </script>
