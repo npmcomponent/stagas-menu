@@ -50,7 +50,9 @@ Menu.prototype = new Emitter;
  */
 
 Menu.prototype.deselect = function(ev){
-  this.el.find('.selected').removeClass('selected');
+  if (!this.selected) return;
+  this.selected.el.removeClass('selected');
+  this.selected = null;
 };
 
 /**
@@ -62,6 +64,13 @@ Menu.prototype.deselect = function(ev){
 Menu.prototype.bindEvents = function(){
   this.bindKeyboardEvents();
   this.bindMouseEvents();
+  this.once('hide', function () {
+    if (this.selected) {
+      this.emit('select', this.selected)
+      this.emit(this.selected.slug, this.selected.text, this.selected.meta)
+      this.selected.fn && this.selected.fn()
+    }
+  })
 };
 
 /**
@@ -84,8 +93,11 @@ Menu.prototype.unbindEvents = function(){
 Menu.prototype.bindMouseEvents = function(){
   this.onbodyclickBound = this.onbodyclick.bind(this)
   this.deselectBound = this.deselect.bind(this);
-  o('html').bind('mouseup', this.onbodyclickBound);
-  this.el.on('mouseover', 'a', this.deselectBound);
+  var self = this;
+  setTimeout(function () {
+    o('html').bind('mouseup', self.onbodyclickBound);
+  }, 0)
+  this.el.one('mouseover', 'a', this.deselectBound);
 };
 
 /**
@@ -96,7 +108,6 @@ Menu.prototype.bindMouseEvents = function(){
 
 Menu.prototype.unbindMouseEvents = function(){
   o('html').unbind('mouseup', this.onbodyclickBound);
-  this.el.off('mouseover', 'a', this.deselectBound);
 };
 
 /**
@@ -106,7 +117,8 @@ Menu.prototype.unbindMouseEvents = function(){
  */
 
 Menu.prototype.bindKeyboardEvents = function(){
-  o(document).bind('keydown.menu', this.onkeydown.bind(this));
+  this.onkeydownBound = this.onkeydown.bind(this);
+  o('html').bind('keydown', this.onkeydownBound);
   return this;
 };
 
@@ -117,7 +129,7 @@ Menu.prototype.bindKeyboardEvents = function(){
  */
 
 Menu.prototype.unbindKeyboardEvents = function(){
-  o(document).unbind('keydown.menu');
+  o('html').unbind('keydown', this.onkeydownBound);
   return this;
 };
 
@@ -131,14 +143,17 @@ Menu.prototype.onkeydown = function(e){
   switch (e.keyCode) {
     // enter
     case 13:
-      this.emit('select', this.selected);
-      this.emit(this.selected.slug, this.selected.text, this.selected.meta);
-      this.selected.fn && this.selected.fn();
       this.hide();
     break;
 
     // esc
     case 27:
+      this.deselect();
+      this.hide();
+    break;
+
+    // tab
+    case 9:
       this.hide();
     break;
 
@@ -146,12 +161,14 @@ Menu.prototype.onkeydown = function(e){
     case 38:
       e.preventDefault();
       this.move('prev');
+      this._isSelecting = true;
     break;
 
     // down
     case 40:
       e.preventDefault();
       this.move('next');
+      this._isSelecting = true;
     break;
   }
 };
@@ -163,7 +180,7 @@ Menu.prototype.onkeydown = function(e){
  */
 
 Menu.prototype.onbodyclick = function() {
-  if (this._isOpen) this.hide();
+  if (this.isOpen()) this.hide();
 };
 
 /**
@@ -273,13 +290,12 @@ Menu.prototype.add = function(text, fn){
   .on('click', function(e){
     e.preventDefault();
   })
+  .on('mousedown', function(e){
+    self._isSelecting = true;
+  })
   .on('mouseup', function(e){
     e.preventDefault();
-    e.stopPropagation();
-    self.emit('select', item);
-    self.emit(slug, text, meta);
-    fn && fn();
-    self.hide();
+    self.select(item);
   });
 
   if (this.has(slug)) {
@@ -331,15 +347,12 @@ Menu.prototype.remove = function(slug){
 
 Menu.prototype.change = function(slug){
   this.add.apply(this, [].slice.call(arguments, 1));
-  var item = this.items[this.items.length-1];
+  var item = this.items.pop();
   var old = this.get(slug);
   this.el[0].insertBefore(item.el[0], old.el[0]);
-  old.el.remove();
-  old.el = item.el;
-  old.slug = item.slug;
-  old.text = item.text;
-  old.meta = item.meta;
-  old.fn = item.fn;
+  old.el.remove()
+  this.items.splice(this.indexOf(old), 1, item);
+  this.select(item);
   return this;
 };
 
@@ -390,8 +403,6 @@ Menu.prototype.indexOf = function(item){
  */
 
 Menu.prototype.moveTo = function(x, y){
-  viewport.refresh();
-
   var height = o(this.el).outerHeight();
   var width = o(this.el).outerWidth();
 
@@ -442,9 +453,10 @@ Menu.prototype.moveToCenter = function(x, y){
  */
 
 Menu.prototype.show = function(){
-  this.emit('show');
+  if (this.isOpen()) return this;
   this.el.show();
   this._isOpen = true;
+  this.emit('show');
   return this;
 };
 
@@ -456,9 +468,11 @@ Menu.prototype.show = function(){
  */
 
 Menu.prototype.hide = function(){
-  this._isOpen = false;
-  this.el.hide();
+  if (!this.isOpen()) return this;
   this.emit('hide');
+  this.el.hide();
+  this._isOpen = false;
+  this._isSelecting = false
   return this;
 };
 
@@ -548,6 +562,17 @@ Menu.prototype.filter = function(fn){
 
 Menu.prototype.isOpen = function(){
   return this._isOpen;
+};
+
+/**
+ * Check if user is selecting.
+ *
+ * @return {Boolean}
+ * @api public
+ */
+
+Menu.prototype.isSelecting = function(){
+  return this._isSelecting;
 };
 
 /**
