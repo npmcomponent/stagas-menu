@@ -57,11 +57,15 @@ oncontextmenu = function(e){
 };
 ```
 
+## License
+
+MIT
+
 ## API
-  
+
 ### Menu()
 
-  Create a new `Menu`:
+Initialize a new `Menu`.
 
 ```js
 var Menu = require('menu');
@@ -69,11 +73,40 @@ var menu = new Menu();
 var menu = Menu();
 ```
 
-### Menu#add([slug], text, [fn])
+Emits:
 
-  Add a new menu item with the given `text`, optional `slug` and callback `fn`.
+- "show" when shown
+- "hide" when hidden
+- "remove" with the item name when an item is removed
+- "select" (item) when an item is selected
+- * menu item events are emitted when clicked
 
-  Using events to handle selection:
+### Menu.prototype()
+
+Inherit from `Emitter.prototype`.
+
+### Menu.move(`direction`:`String`)
+
+Focus on the next menu item in `direction`.
+
+
+### Menu.get(`slug`:`String`)
+> _returns_ MenuItem
+
+Gets a menu item named `slug`.
+
+
+### Menu.add(`text`:`String`, `fn`:`Function`)
+> _returns_ Menu
+
+Add a new menu item with the given `text`, optional `slug` and callback `fn`.
+
+When the item is clicked `fn()` will be invoked
+and the `Menu` is immediately closed. When clicked
+an event of the name `text` is emitted regardless of
+the callback function being present.
+
+Using events to handle selection:
 
 ```js
 menu.add('Hello');
@@ -83,7 +116,7 @@ menu.on('Hello', function(){
 });
 ```
 
-  Using callbacks:
+Using callbacks:
 
 ```js
 menu.add('Hello', function(){
@@ -91,9 +124,9 @@ menu.add('Hello', function(){
 });
 ```
 
-  Using a custom slug, otherwise "hello" is generated
-  from the `text` given, which may conflict with "rich"
-  styling like icons within menu items, or i18n.
+Using a custom slug, otherwise "hello" is generated
+from the `text` given, which may conflict with "rich"
+styling like icons within menu items, or i18n.
 
 ```js
 menu.add('add-item', 'Add Item');
@@ -107,25 +140,39 @@ menu.add('add-item', 'Add Item', function(){
 });
 ```
 
-### Menu#remove(slug)
+### Menu.remove(`slug`:`String`)
+> _returns_ Menu
 
-  Remove an item by the given `slug`:
+Remove an item by the given `slug`:
 
 ```js
 menu.add('Add item');
 menu.remove('Add item');
 ```
 
-  Or with custom slugs:
+Or with custom slugs:
 
 ```js
 menu.add('add-item', 'Add item');
 menu.remove('add-item');
 ```
 
-### Menu#has(slug)
+### Menu.change(`slug`:`String`)
+> _returns_ Menu
 
-  Check if a menu item is present.
+Change menu item with `slug`.
+
+
+### Menu.clear()
+> _returns_ Menu
+
+Clear menu.
+
+
+### Menu.has(`item`:`MenuItem`)
+> _returns_ Boolean
+
+Check if a menu item is present.
 
 ```js
 menu.add('Add item');
@@ -140,18 +187,80 @@ menu.has('Foo');
 // => false
 ```
 
-### Menu#moveTo(x, y)
+### Menu.indexOf(`item`:`MenuItem`)
+> _returns_ Number
 
-  Move the menu to `(x, y)`.
+Find index of menu `item`.
 
-### Menu#show()
 
-  Show the menu.
+### Menu.moveTo(`x`:`Number`, `y`:`Number`)
+> _returns_ Menu
 
-### Menu#hide()
+Move context menu to `(x, y)`.
 
-  Hide the menu.
 
-## License
+### Menu.moveToCenter(`x`:`Number`, `y`:`Number`)
+> _returns_ Menu
 
-  MIT
+Move context menu to `(x, y)`.
+
+
+### Menu.show()
+> _returns_ Menu
+
+Show the menu.
+
+
+### Menu.hide()
+> _returns_ Menu
+
+Hide the menu.
+
+
+### Menu.showItem(`item`:`Element`)
+> _returns_ Menu
+
+Show a menu item.
+
+
+### Menu.hideItem(`item`:`Element`)
+> _returns_ Menu
+
+Hide a menu item.
+
+
+### Menu.unhideAll()
+> _returns_ Menu
+
+Unhide all items.
+
+
+### Menu.toggle()
+> _returns_ Menu
+
+Toggle the menu.
+
+
+### Menu.filter(`fn`:`Function`)
+> _returns_ Menu
+
+Filter menu using `fn`.
+
+
+### Menu.isOpen()
+> _returns_ Boolean
+
+Check if menu is visible.
+
+
+### Menu.isSelecting()
+> _returns_ Boolean
+
+Check if user is selecting.
+
+
+### MenuItem(`item`:`Object`)
+
+MenuItem class.
+
+

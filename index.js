@@ -16,13 +16,19 @@ module.exports = Menu;
 /**
  * Initialize a new `Menu`.
  *
+ * ```js
+ * var Menu = require('menu');
+ * var menu = new Menu();
+ * var menu = Menu();
+ * ```
+ *
  * Emits:
  *
- *   - "show" when shown
- *   - "hide" when hidden
- *   - "remove" with the item name when an item is removed
- *   - "select" (item) when an item is selected
- *   - * menu item events are emitted when clicked
+ * - "show" when shown
+ * - "hide" when hidden
+ * - "remove" with the item name when an item is removed
+ * - "select" (item) when an item is selected
+ * - * menu item events are emitted when clicked
  *
  * @api public
  */
@@ -67,7 +73,8 @@ Menu.prototype.bindEvents = function(){
   this.once('hide', function () {
     if (this.selected) {
       this.emit('select', this.selected)
-      this.emit(this.selected.slug, this.selected.text, this.selected.meta)
+      this.emit(this.selected.slug, this.selected)
+      this.emit(this.selected.text, this.selected)
       this.selected.fn && this.selected.fn()
     }
   })
@@ -238,7 +245,7 @@ Menu.prototype.move = function(direction){
  * Gets a menu item named `slug`.
  *
  * @param {String} slug
- * @return {Element}
+ * @return {MenuItem}
  * @api public
  */
 
@@ -251,12 +258,46 @@ Menu.prototype.get = function(slug){
 };
 
 /**
- * Add menu item with the given `text` and optional callback `fn`.
+ * Add a new menu item with the given `text`, optional `slug` and callback `fn`.
  *
  * When the item is clicked `fn()` will be invoked
  * and the `Menu` is immediately closed. When clicked
  * an event of the name `text` is emitted regardless of
  * the callback function being present.
+ *
+ * Using events to handle selection:
+ *
+ * ```js
+ * menu.add('Hello');
+ *
+ * menu.on('Hello', function(){
+ *   console.log('clicked hello');
+ * });
+ * ```
+ *
+ * Using callbacks:
+ *
+ * ```js
+ * menu.add('Hello', function(){
+ *   console.log('clicked hello');
+ * });
+ * ```
+ *
+ * Using a custom slug, otherwise "hello" is generated
+ * from the `text` given, which may conflict with "rich"
+ * styling like icons within menu items, or i18n.
+ *
+ * ```js
+ * menu.add('add-item', 'Add Item');
+ *
+ * menu.on('add-item', function(){
+ *   console.log('clicked "Add Item"');
+ * });
+ *
+ * menu.add('add-item', 'Add Item', function(){
+ *   console.log('clicked "Add Item"');
+ * });
+ * ```
  *
  * @param {String} text
  * @param {Function} fn
@@ -298,10 +339,6 @@ Menu.prototype.add = function(text, fn){
     self.select(item);
   });
 
-  if (this.has(slug)) {
-    this.hideItem(el);
-  }
-
   var item = new MenuItem({
     el: el
   , text: text
@@ -310,13 +347,29 @@ Menu.prototype.add = function(text, fn){
   , fn: fn
   });
 
+  if (this.has(slug)) {
+    this.hideItem(item);
+  }
+
   this.items.push(item);
 
   return this;
 };
 
 /**
- * Remove menu item by `slug`.
+ * Remove an item by the given `slug`:
+ *
+ * ```js
+ * menu.add('Add item');
+ * menu.remove('Add item');
+ * ```
+ *
+ * Or with custom slugs:
+ *
+ * ```js
+ * menu.add('add-item', 'Add item');
+ * menu.remove('add-item');
+ * ```
  *
  * @param {String} slug
  * @return {Menu}
@@ -370,7 +423,20 @@ Menu.prototype.clear = function(){
 };
 
 /**
- * Check if this menu has `item`.
+ * Check if a menu item is present.
+ *
+ * ```js
+ * menu.add('Add item');
+ *
+ * menu.has('Add item');
+ * // => true
+ *
+ * menu.has('add-item');
+ * // => true
+ *
+ * menu.has('Foo');
+ * // => false
+ * ```
  *
  * @param {MenuItem} item
  * @return {Boolean}
@@ -479,7 +545,7 @@ Menu.prototype.hide = function(){
 /**
  * Show a menu item.
  *
- * @param {Element} item
+ * @param {MenuItem} item
  * @return {Menu}
  * @api public
  */
@@ -493,7 +559,7 @@ Menu.prototype.showItem = function(item){
 /**
  * Hide a menu item.
  *
- * @param {Element} item
+ * @param {MenuItem} item
  * @return {Menu}
  * @api public
  */
