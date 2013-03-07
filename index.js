@@ -523,9 +523,14 @@ Menu.prototype.moveToCenter = function(x, y){
 
 Menu.prototype.show = function(){
   if (this.isOpen()) return this;
+
+  if (!this.hasVisibleItems()) return this;
+
   this.el.show();
   this._isOpen = true;
+
   this.emit('show');
+
   return this;
 };
 
@@ -538,10 +543,14 @@ Menu.prototype.show = function(){
 
 Menu.prototype.hide = function(){
   if (!this.isOpen()) return this;
+
   this.emit('hide');
+
   this.el.hide();
   this._isOpen = false;
+
   this._isSelecting = false
+
   return this;
 };
 
@@ -611,6 +620,7 @@ Menu.prototype.toggle = function(){
 
 Menu.prototype.filter = function(fn){
   var self = this;
+
   this.items.forEach(function (item) {
     if (fn(item)) {
       self.showItem(item);
@@ -619,7 +629,23 @@ Menu.prototype.filter = function(fn){
       self.hideItem(item);
     }
   });
+
+  if (!this.hasVisibleItems()) this.hide();
+
   return this;
+};
+
+/**
+ * Check if there are visible items.
+ *
+ * @return {Boolean}
+ * @api private
+ */
+
+Menu.prototype.hasVisibleItems = function(){
+  return this.items.filter(function (item) {
+    return !item.hidden;
+  }).length!=0
 };
 
 /**
