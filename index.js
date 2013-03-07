@@ -70,14 +70,6 @@ Menu.prototype.deselect = function(ev){
 Menu.prototype.bindEvents = function(){
   this.bindKeyboardEvents();
   this.bindMouseEvents();
-  this.once('hide', function () {
-    if (this.selected) {
-      this.emit('select', this.selected)
-      this.emit(this.selected.slug, this.selected)
-      this.emit(this.selected.text, this.selected)
-      this.selected.fn && this.selected.fn()
-    }
-  })
 };
 
 /**
@@ -141,6 +133,21 @@ Menu.prototype.unbindKeyboardEvents = function(){
 };
 
 /**
+ * Emit selected if any.
+ *
+ * @api private
+ */
+
+Menu.prototype.emitSelected = function(){
+  if (this.selected) {
+    this.emit('select', this.selected);
+    this.emit(this.selected.slug, this.selected);
+    this.emit(this.selected.text, this.selected);
+    this.selected.fn && this.selected.fn();
+  }
+};
+
+/**
  * Handle keydown events.
  *
  * @api private
@@ -148,31 +155,26 @@ Menu.prototype.unbindKeyboardEvents = function(){
 
 Menu.prototype.onkeydown = function(e){
   switch (e.keyCode) {
-    // enter
-    case 13:
+    case 13: // enter
+    case 39: // right
+    case 9: // tab
+      this.emitSelected();
       this.hide();
     break;
 
-    // esc
-    case 27:
+    case 27: // tab
+    case 37: // left
       this.deselect();
       this.hide();
     break;
 
-    // tab
-    case 9:
-      this.hide();
-    break;
-
-    // up
-    case 38:
+    case 38: // up
       e.preventDefault();
       this.move('prev');
       this._isSelecting = true;
     break;
 
-    // down
-    case 40:
+    case 40: // down
       e.preventDefault();
       this.move('next');
       this._isSelecting = true;
@@ -337,6 +339,7 @@ Menu.prototype.add = function(text, fn){
   .on('mouseup', function(e){
     e.preventDefault();
     self.select(item);
+    self.emitSelected();
   });
 
   var item = new MenuItem({
