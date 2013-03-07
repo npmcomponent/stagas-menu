@@ -9,7 +9,7 @@
   "dependencies": {
     "component/emitter": "*",
     "component/jquery": "*",
-    "pazguille/viewport": "*"
+    "stagas/viewport": "*"
   },
   "development": {
     "stagas/watch-js": "*"
