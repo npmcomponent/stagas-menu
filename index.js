@@ -155,11 +155,17 @@ Menu.prototype.emitSelected = function(){
 
 Menu.prototype.onkeydown = function(e){
   switch (e.keyCode) {
-    case 13: // enter
     case 39: // right
     case 9: // tab
       this.emitSelected();
       this.hide();
+    break;
+
+    case 13: // enter
+      e.preventDefault();
+      this.emitSelected();
+      this.hide();
+      return false;
     break;
 
     case 27: // tab
