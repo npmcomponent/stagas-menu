@@ -482,16 +482,9 @@ Menu.prototype.indexOf = function(item){
  */
 
 Menu.prototype.moveTo = function(x, y){
-  var height = o(this.el).outerHeight();
   var width = o(this.el).outerWidth();
 
-  if (y+height > viewport.bottom) {
-    y = viewport.bottom-height;
-  }
-
-  if (y < viewport.top) {
-    y = viewport.top;
-  }
+  viewport.refresh();
 
   if (x+width > viewport.right) {
     x = viewport.right-width;
@@ -502,8 +495,23 @@ Menu.prototype.moveTo = function(x, y){
   }
 
   this.el.css({
-    top: y,
     left: x
+  });
+
+  viewport.refresh();
+
+  var height = o(this.el).outerHeight();
+
+  if (y+height > viewport.bottom) {
+    y = viewport.bottom-height;
+  }
+
+  if (y < viewport.top) {
+    y = viewport.top;
+  }
+
+  this.el.css({
+    top: y
   });
 
   return this;
