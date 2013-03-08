@@ -321,6 +321,10 @@ Menu.prototype.add = function(text, fn){
     slug = text;
     text = fn;
     fn = arguments[2];
+    if ('function' != typeof fn) {
+      meta = fn;
+      fn = arguments[3];
+    }
   } else {
     slug = createSlug(text);
   }
