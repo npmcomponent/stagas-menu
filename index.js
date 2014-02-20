@@ -3,9 +3,9 @@
  * Module dependencies.
  */
 
-var Emitter = require('emitter')
-  , viewport = require('viewport')
-  , o = require('jquery');
+var Emitter = require('component-emitter')
+  , viewport = require('stagas-viewport')
+  , o = require('component-jquery');
 
 /**
  * Expose `Menu`.
